@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Maintenance Document{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-4">Upload Maintenance Document</h1>
+        <p class="lead">Upload a service receipt, invoice, or maintenance document to automatically extract and record the information</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-cloud-upload"></i> Upload Document</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('upload_document') }}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="document" class="form-label">Select Document (PDF, JPG, PNG)</label>
+                        <input type="file" class="form-control form-control-lg" id="document" name="document" 
+                               accept=".pdf,.jpg,.jpeg,.png" required>
+                        <div class="form-text">
+                            Supported formats: PDF, JPG, PNG. Maximum file size: 10MB
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="vehicle_id" class="form-label">Vehicle (Optional - AI will try to detect)</label>
+                        <select class="form-select" id="vehicle_id" name="vehicle_id">
+                            <option value="">Let AI detect vehicle</option>
+                            {% for vehicle in vehicles %}
+                            <option value="{{ vehicle.id }}">{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }} - {{ vehicle.license_plate }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            If you select a vehicle, AI will still verify it matches the document
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>AI Processing:</strong> The system will automatically extract:
+                        <ul class="mb-0 mt-2">
+                            <li>Vehicle identification (VIN, license plate, or description)</li>
+                            <li>Maintenance type and description</li>
+                            <li>Service date</li>
+                            <li>Mileage at service</li>
+                            <li>Cost and service provider</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-magic"></i> Process Document with AI
+                        </button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Tips</h5>
+            </div>
+            <div class="card-body">
+                <h6>For best results:</h6>
+                <ul>
+                    <li>Ensure the document is clear and readable</li>
+                    <li>Include the full receipt or invoice</li>
+                    <li>Make sure VIN or license plate is visible</li>
+                    <li>Document should show date, mileage, and services performed</li>
+                </ul>
+                
+                <h6 class="mt-3">Supported Documents:</h6>
+                <ul>
+                    <li>Service receipts</li>
+                    <li>Maintenance invoices</li>
+                    <li>Oil change records</li>
+                    <li>Inspection reports</li>
+                    <li>Repair bills</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if recent_uploads %}
+<div class="row mt-4">
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Uploads</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Vehicle</th>
+                                <th>Maintenance Type</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in recent_uploads %}
+                            <tr>
+                                <td>{{ record.service_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ record.vehicle.year }} {{ record.vehicle.make }} {{ record.vehicle.model }}</td>
+                                <td>{{ record.maintenance_type }}</td>
+                                <td><span class="badge bg-success">Processed</span></td>
+                                <td>
+                                    <a href="{{ url_for('vehicle_detail', id=record.vehicle_id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

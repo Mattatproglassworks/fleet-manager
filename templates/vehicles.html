@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Vehicles - Fleet Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-4">Vehicles</h1>
+        <p class="lead">Manage your fleet vehicles</p>
+    </div>
+    <div class="col-md-4 text-end d-flex align-items-center justify-content-end">
+        <a href="{{ url_for('add_vehicle') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-lg"></i> Add Vehicle
+        </a>
+    </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('vehicles') }}" class="row g-3">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="Search by make, model, license plate, or VIN" value="{{ search_query }}">
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="Active" {% if status_filter == 'Active' %}selected{% endif %}>Active</option>
+                    <option value="In Maintenance" {% if status_filter == 'In Maintenance' %}selected{% endif %}>In Maintenance</option>
+                    <option value="Retired" {% if status_filter == 'Retired' %}selected{% endif %}>Retired</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Vehicles List -->
+{% if vehicles %}
+    <div class="row">
+        {% for vehicle in vehicles %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 vehicle-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">{{ vehicle.make }} {{ vehicle.model }}</h5>
+                            <span class="badge 
+                                {% if vehicle.status == 'Active' %}bg-success
+                                {% elif vehicle.status == 'In Maintenance' %}bg-warning
+                                {% else %}bg-secondary{% endif %}">
+                                {{ vehicle.status }}
+                            </span>
+                        </div>
+                        <h6 class="text-muted">{{ vehicle.year }}</h6>
+                        <hr>
+                        <p class="mb-1"><strong>License Plate:</strong> {{ vehicle.license_plate }}</p>
+                        <p class="mb-1"><strong>VIN:</strong> {{ vehicle.vin }}</p>
+                        <p class="mb-1"><strong>Mileage:</strong> {{ "{:,}".format(vehicle.current_mileage) }} miles</p>
+                        {% if vehicle.assigned_driver %}
+                            <p class="mb-1"><strong>Driver:</strong> {{ vehicle.assigned_driver }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a href="{{ url_for('vehicle_detail', id=vehicle.id) }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-eye"></i> View Details
+                        </a>
+                        <a href="{{ url_for('edit_vehicle', id=vehicle.id) }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No vehicles found. <a href="{{ url_for('add_vehicle') }}">Add your first vehicle</a>.
+    </div>
+{% endif %}
+{% endblock %}

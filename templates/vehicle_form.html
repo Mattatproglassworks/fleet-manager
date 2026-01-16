@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}{% if vehicle %}Edit{% else %}Add{% endif %} Vehicle - Fleet Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-4">
+            {% if vehicle %}
+                <i class="bi bi-pencil"></i> Edit Vehicle
+            {% else %}
+                <i class="bi bi-plus-circle"></i> Add New Vehicle
+            {% endif %}
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="vin" class="form-label">VIN <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="vin" name="vin" required maxlength="17" 
+                                   value="{% if vehicle %}{{ vehicle.vin }}{% endif %}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="license_plate" class="form-label">License Plate <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="license_plate" name="license_plate" required 
+                                   value="{% if vehicle %}{{ vehicle.license_plate }}{% endif %}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="make" class="form-label">Make <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="make" name="make" required 
+                                   value="{% if vehicle %}{{ vehicle.make }}{% endif %}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="model" class="form-label">Model <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="model" name="model" required 
+                                   value="{% if vehicle %}{{ vehicle.model }}{% endif %}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="year" class="form-label">Year <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="year" name="year" required 
+                                   min="1900" max="2100" value="{% if vehicle %}{{ vehicle.year }}{% endif %}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="purchase_date" class="form-label">Purchase Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="purchase_date" name="purchase_date" required 
+                                   value="{% if vehicle %}{{ vehicle.purchase_date.strftime('%Y-%m-%d') }}{% endif %}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="current_mileage" class="form-label">Current Mileage <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="current_mileage" name="current_mileage" required 
+                                   min="0" value="{% if vehicle %}{{ vehicle.current_mileage }}{% else %}0{% endif %}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="Active" {% if vehicle and vehicle.status == 'Active' %}selected{% endif %}>Active</option>
+                                <option value="In Maintenance" {% if vehicle and vehicle.status == 'In Maintenance' %}selected{% endif %}>In Maintenance</option>
+                                <option value="Retired" {% if vehicle and vehicle.status == 'Retired' %}selected{% endif %}>Retired</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="assigned_driver" class="form-label">Assigned Driver</label>
+                            <input type="text" class="form-control" id="assigned_driver" name="assigned_driver" 
+                                   value="{% if vehicle %}{{ vehicle.assigned_driver or '' }}{% endif %}">
+                        </div>
+                    </div>
+
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <a href="{% if vehicle %}{{ url_for('vehicle_detail', id=vehicle.id) }}{% else %}{{ url_for('vehicles') }}{% endif %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save Vehicle
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-info-circle"></i> Tips</h5>
+                <ul class="small">
+                    <li>VIN must be exactly 17 characters</li>
+                    <li>All fields marked with <span class="text-danger">*</span> are required</li>
+                    <li>Use unique license plates and VINs</li>
+                    <li>Set status to "In Maintenance" when vehicle is being serviced</li>
+                    <li>Update mileage regularly for accurate tracking</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}{{ vehicle.make }} {{ vehicle.model }} - Fleet Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-4">{{ vehicle.make }} {{ vehicle.model }}</h1>
+        <p class="lead">{{ vehicle.year }} - {{ vehicle.license_plate }}</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('edit_vehicle', id=vehicle.id) }}" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Edit Vehicle
+        </a>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+            <i class="bi bi-trash"></i> Delete
+        </button>
+    </div>
+</div>
+
+<!-- Vehicle Information -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Vehicle Information</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th>VIN:</th>
+                        <td>{{ vehicle.vin }}</td>
+                    </tr>
+                    <tr>
+                        <th>License Plate:</th>
+                        <td>{{ vehicle.license_plate }}</td>
+                    </tr>
+                    <tr>
+                        <th>Make:</th>
+                        <td>{{ vehicle.make }}</td>
+                    </tr>
+                    <tr>
+                        <th>Model:</th>
+                        <td>{{ vehicle.model }}</td>
+                    </tr>
+                    <tr>
+                        <th>Year:</th>
+                        <td>{{ vehicle.year }}</td>
+                    </tr>
+                    <tr>
+                        <th>Current Mileage:</th>
+                        <td>{{ "{:,}".format(vehicle.current_mileage) }} miles</td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            <span class="badge 
+                                {% if vehicle.status == 'Active' %}bg-success
+                                {% elif vehicle.status == 'In Maintenance' %}bg-warning
+                                {% else %}bg-secondary{% endif %}">
+                                {{ vehicle.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Purchase Date:</th>
+                        <td>{{ vehicle.purchase_date.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                    {% if vehicle.assigned_driver %}
+                    <tr>
+                        <th>Assigned Driver:</th>
+                        <td>{{ vehicle.assigned_driver }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Maintenance Summary</h5>
+            </div>
+            <div class="card-body">
+                <h3>Total Maintenance Cost</h3>
+                <h2 class="text-primary">${{ "%.2f"|format(total_cost) }}</h2>
+                <hr>
+                <p><strong>Total Records:</strong> {{ maintenance_records|length }}</p>
+                {% if upcoming %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> 
+                        <strong>{{ upcoming|length }} upcoming maintenance item(s)</strong>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Maintenance Records -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-wrench"></i> Maintenance History</h5>
+        <a href="{{ url_for('add_maintenance', vehicle_id=vehicle.id) }}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Maintenance Record
+        </a>
+    </div>
+    <div class="card-body">
+        {% if maintenance_records %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Mileage</th>
+                            <th>Cost</th>
+                            <th>Next Service</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in maintenance_records %}
+                            <tr>
+                                <td>{{ record.service_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ record.maintenance_type }}</td>
+                                <td>{{ "{:,}".format(record.mileage_at_service) }}</td>
+                                <td>${{ "%.2f"|format(record.cost) }}</td>
+                                <td>
+                                    {% if record.next_service_due %}
+                                        {{ record.next_service_due.strftime('%Y-%m-%d') }}
+                                        {% if record.next_service_mileage %}
+                                            <br><small class="text-muted">{{ "{:,}".format(record.next_service_mileage) }} miles</small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('edit_maintenance', id=record.id) }}" class="btn btn-sm btn-outline-primary me-1">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form method="POST" action="{{ url_for('delete_maintenance', id=record.id) }}" style="display: inline;" class="delete-form">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% if record.notes %}
+                                <tr class="table-light">
+                                    <td colspan="6"><small><strong>Notes:</strong> {{ record.notes }}</small></td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted">No maintenance records yet. <a href="{{ url_for('add_maintenance', vehicle_id=vehicle.id) }}">Add the first record</a>.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this vehicle? This will also delete all associated maintenance records.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('delete_vehicle', id=vehicle.id) }}">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

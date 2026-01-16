@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Maintenance Records - Fleet Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-4">Maintenance Records</h1>
+        <p class="lead">Track all maintenance activities</p>
+    </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('maintenance') }}" class="row g-3">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="Search by vehicle make, model, or license plate" value="{{ search_query }}">
+            </div>
+            <div class="col-md-4">
+                <select name="type" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="Oil Change" {% if type_filter == 'Oil Change' %}selected{% endif %}>Oil Change</option>
+                    <option value="Tire Rotation" {% if type_filter == 'Tire Rotation' %}selected{% endif %}>Tire Rotation</option>
+                    <option value="Inspection" {% if type_filter == 'Inspection' %}selected{% endif %}>Inspection</option>
+                    <option value="Smog Check" {% if type_filter == 'Smog Check' %}selected{% endif %}>Smog Check</option>
+                    <option value="Brake Service" {% if type_filter == 'Brake Service' %}selected{% endif %}>Brake Service</option>
+                    <option value="Transmission Service" {% if type_filter == 'Transmission Service' %}selected{% endif %}>Transmission Service</option>
+                    <option value="Repair" {% if type_filter == 'Repair' %}selected{% endif %}>Repair</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Maintenance Records Table -->
+{% if maintenance_records %}
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Vehicle</th>
+                            <th>Type</th>
+                            <th>Service Date</th>
+                            <th>Mileage</th>
+                            <th>Cost</th>
+                            <th>Provider</th>
+                            <th>Next Service</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in maintenance_records %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('vehicle_detail', id=record.vehicle.id) }}">
+                                        <strong>{{ record.vehicle.make }} {{ record.vehicle.model }}</strong><br>
+                                        <small class="text-muted">{{ record.vehicle.license_plate }}</small>
+                                    </a>
+                                </td>
+                                <td>{{ record.maintenance_type }}</td>
+                                <td>{{ record.service_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ "{:,}".format(record.mileage_at_service) }}</td>
+                                <td>${{ "%.2f"|format(record.cost) }}</td>
+                                <td>{{ record.service_provider or 'N/A' }}</td>
+                                <td>
+                                    {% if record.next_service_due %}
+                                        {{ record.next_service_due.strftime('%Y-%m-%d') }}
+                                        {% if record.next_service_mileage %}
+                                            <br><small class="text-muted">{{ "{:,}".format(record.next_service_mileage) }} mi</small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('edit_maintenance', id=record.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form method="POST" action="{{ url_for('delete_maintenance', id=record.id) }}" style="display: inline;">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% if record.notes %}
+                                <tr class="table-light">
+                                    <td colspan="8"><small><strong>Notes:</strong> {{ record.notes }}</small></td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No maintenance records found. Add maintenance records from individual vehicle pages.
+    </div>
+{% endif %}
+{% endblock %}

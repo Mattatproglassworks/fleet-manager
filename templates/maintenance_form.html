@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}{% if maintenance %}Edit{% else %}Add{% endif %} Maintenance - Fleet Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-4">
+            {% if maintenance %}
+                <i class="bi bi-pencil"></i> Edit Maintenance Record
+            {% else %}
+                <i class="bi bi-plus-circle"></i> Add Maintenance Record
+            {% endif %}
+        </h1>
+        <p class="lead">{{ vehicle.make }} {{ vehicle.model }} - {{ vehicle.license_plate }}</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="maintenance_type" class="form-label">Maintenance Type <span class="text-danger">*</span></label>
+                            <select class="form-select" id="maintenance_type" name="maintenance_type" required>
+                                <option value="">Select type...</option>
+                                <option value="Oil Change" {% if maintenance and maintenance.maintenance_type == 'Oil Change' %}selected{% endif %}>Oil Change</option>
+                                <option value="Tire Rotation" {% if maintenance and maintenance.maintenance_type == 'Tire Rotation' %}selected{% endif %}>Tire Rotation</option>
+                                <option value="Inspection" {% if maintenance and maintenance.maintenance_type == 'Inspection' %}selected{% endif %}>Inspection</option>
+                                <option value="Smog Check" {% if maintenance and maintenance.maintenance_type == 'Smog Check' %}selected{% endif %}>Smog Check</option>
+                                <option value="Brake Service" {% if maintenance and maintenance.maintenance_type == 'Brake Service' %}selected{% endif %}>Brake Service</option>
+                                <option value="Transmission Service" {% if maintenance and maintenance.maintenance_type == 'Transmission Service' %}selected{% endif %}>Transmission Service</option>
+                                <option value="Repair" {% if maintenance and maintenance.maintenance_type == 'Repair' %}selected{% endif %}>Repair</option>
+                                <option value="Other" {% if maintenance and maintenance.maintenance_type == 'Other' %}selected{% endif %}>Other (Enter Custom)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6" id="custom_type_container" style="display: none;">
+                            <label for="custom_maintenance_type" class="form-label">Custom Maintenance Type <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="custom_maintenance_type" name="custom_maintenance_type" placeholder="Enter custom type...">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="service_date" class="form-label">Service Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="service_date" name="service_date" required 
+                                   value="{% if maintenance %}{{ maintenance.service_date.strftime('%Y-%m-%d') }}{% endif %}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="mileage_at_service" class="form-label">Mileage at Service <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="mileage_at_service" name="mileage_at_service" required 
+                                   min="0" value="{% if maintenance %}{{ maintenance.mileage_at_service }}{% else %}{{ vehicle.current_mileage }}{% endif %}">
+                            <small class="text-muted">Current vehicle mileage: {{ "{:,}".format(vehicle.current_mileage) }}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cost" class="form-label">Cost ($) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="cost" name="cost" required 
+                                   min="0" step="0.01" value="{% if maintenance %}{{ maintenance.cost }}{% else %}0{% endif %}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="service_provider" class="form-label">Service Provider</label>
+                        <input type="text" class="form-control" id="service_provider" name="service_provider" 
+                               value="{% if maintenance %}{{ maintenance.service_provider or '' }}{% endif %}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3">{% if maintenance %}{{ maintenance.notes or '' }}{% endif %}</textarea>
+                    </div>
+
+                    <hr>
+                    <h5 class="mb-3">Next Service Schedule</h5>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="next_service_due" class="form-label">Next Service Date</label>
+                            <input type="date" class="form-control" id="next_service_due" name="next_service_due" 
+                                   value="{% if maintenance and maintenance.next_service_due %}{{ maintenance.next_service_due.strftime('%Y-%m-%d') }}{% endif %}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="next_service_mileage" class="form-label">Next Service Mileage</label>
+                            <input type="number" class="form-control" id="next_service_mileage" name="next_service_mileage" 
+                                   min="0" value="{% if maintenance and maintenance.next_service_mileage %}{{ maintenance.next_service_mileage }}{% endif %}">
+                        </div>
+                    </div>
+
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('vehicle_detail', id=vehicle.id) }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save Record
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-info-circle"></i> Tips</h5>
+                <ul class="small">
+                    <li>All fields marked with <span class="text-danger">*</span> are required</li>
+                    <li>Enter the mileage shown on the vehicle at the time of service</li>
+                    <li>Set next service date/mileage to track upcoming maintenance</li>
+                    <li>Common intervals:
+                        <ul>
+                            <li>Oil Change: 3,000-5,000 miles</li>
+                            <li>Tire Rotation: 5,000-7,500 miles</li>
+                            <li>Inspection: 12 months</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Show/hide custom maintenance type field
+    document.getElementById('maintenance_type').addEventListener('change', function() {
+        const customContainer = document.getElementById('custom_type_container');
+        const customInput = document.getElementById('custom_maintenance_type');
+        
+        if (this.value === 'Other') {
+            customContainer.style.display = 'block';
+            customInput.required = true;
+        } else {
+            customContainer.style.display = 'none';
+            customInput.required = false;
+            customInput.value = '';
+        }
+    });
+    
+    // Initialize on page load if "Other" is selected
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('maintenance_type').value === 'Other') {
+            document.getElementById('custom_type_container').style.display = 'block';
+            document.getElementById('custom_maintenance_type').required = true;
+        }
+    });
+</script>
+{% endblock %}

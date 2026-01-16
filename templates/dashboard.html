@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Fleet Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-4">Dashboard</h1>
+        <p class="lead">Overview of your fleet and maintenance activities</p>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-truck"></i> Total Vehicles</h5>
+                <h2 class="mb-0">{{ total_vehicles }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-check-circle"></i> Active</h5>
+                <h2 class="mb-0">{{ active_vehicles }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-wrench"></i> In Maintenance</h5>
+                <h2 class="mb-0">{{ in_maintenance }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-currency-dollar"></i> Monthly Cost</h5>
+                <h2 class="mb-0">${{ "%.2f"|format(monthly_cost) }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Upcoming Maintenance -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Upcoming Maintenance</h5>
+            </div>
+            <div class="card-body">
+                {% if upcoming_maintenance %}
+                    <div class="list-group">
+                        {% for maintenance in upcoming_maintenance %}
+                            <a href="{{ url_for('vehicle_detail', id=maintenance.vehicle.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ maintenance.vehicle.make }} {{ maintenance.vehicle.model }}</h6>
+                                    <small>{{ maintenance.next_service_due.strftime('%Y-%m-%d') }}</small>
+                                </div>
+                                <p class="mb-1">{{ maintenance.maintenance_type }}</p>
+                                <small class="text-muted">{{ maintenance.vehicle.license_plate }}</small>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No upcoming maintenance in the next 30 days.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Maintenance -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Maintenance</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_maintenance %}
+                    <div class="list-group">
+                        {% for maintenance in recent_maintenance %}
+                            <a href="{{ url_for('vehicle_detail', id=maintenance.vehicle.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ maintenance.vehicle.make }} {{ maintenance.vehicle.model }}</h6>
+                                    <small>{{ maintenance.service_date.strftime('%Y-%m-%d') }}</small>
+                                </div>
+                                <p class="mb-1">{{ maintenance.maintenance_type }} - ${{ "%.2f"|format(maintenance.cost) }}</p>
+                                <small class="text-muted">{{ maintenance.vehicle.license_plate }}</small>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No recent maintenance records.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('add_vehicle') }}" class="btn btn-primary me-2">
+                    <i class="bi bi-plus-circle"></i> Add New Vehicle
+                </a>
+                <a href="{{ url_for('vehicles') }}" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-list"></i> View All Vehicles
+                </a>
+                <a href="{{ url_for('maintenance') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-wrench"></i> View All Maintenance
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
