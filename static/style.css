@@ -398,27 +398,39 @@ a:hover {
     box-shadow: var(--shadow-md) !important;
 }
 
+/* Dashboard Stat Cards - Equal height and centered */
+.bg-primary.card,
+.bg-success.card,
+.bg-warning.card,
+.bg-info.card {
+    min-height: 180px;
+}
+
 .bg-primary .card-body,
 .bg-success .card-body,
 .bg-warning .card-body,
 .bg-info .card-body {
-    padding: 2rem !important;
+    padding: 1.5rem !important;
     display: flex !important;
     flex-direction: column !important;
-    align-items: flex-start !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    height: 100% !important;
 }
 
 .bg-primary .card-title,
 .bg-success .card-title,
 .bg-warning .card-title,
 .bg-info .card-title {
-    font-size: 13px !important;
+    font-size: 12px !important;
     font-weight: 600 !important;
     opacity: 0.95 !important;
     letter-spacing: 0.05em !important;
     text-transform: uppercase !important;
-    margin-bottom: 0.75rem !important;
+    margin-bottom: 0.5rem !important;
     color: white !important;
+    white-space: nowrap !important;
 }
 
 .bg-primary h2,
@@ -426,7 +438,7 @@ a:hover {
 .bg-warning h2,
 .bg-info h2 {
     font-weight: 700 !important;
-    font-size: 2.5rem !important;
+    font-size: 3rem !important;
     letter-spacing: -0.02em !important;
     line-height: 1 !important;
     margin: 0 !important;
