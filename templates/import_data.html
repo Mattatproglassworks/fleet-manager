@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Import Fleet Data{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-4">Import Fleet Data</h1>
+        <p class="lead">Import vehicles and maintenance records from an Excel file</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Download Template Section -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-download"></i> Step 1: Download Template</h5>
+            </div>
+            <div class="card-body">
+                <p>Download our Excel template to get started. The template includes:</p>
+                <ul>
+                    <li><strong>Instructions</strong> - Detailed guide for filling out the data</li>
+                    <li><strong>Vehicles sheet</strong> - Add your vehicle information</li>
+                    <li><strong>Maintenance Records sheet</strong> - Add service history</li>
+                </ul>
+                
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Tip:</strong> The template includes example data (highlighted in green) - delete these rows before uploading.
+                </div>
+                
+                <a href="{{ url_for('download_template') }}" class="btn btn-success btn-lg">
+                    <i class="bi bi-file-earmark-excel"></i> Download Template
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-upload"></i> Step 2: Upload Your Data</h5>
+            </div>
+            <div class="card-body">
+                <p>After filling out the template, upload it here to import your data.</p>
+                
+                <form action="{{ url_for('upload_import_file') }}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="file" class="form-label">Select Excel File</label>
+                        <input type="file" class="form-control form-control-lg" id="file" name="file" 
+                               accept=".xlsx,.xls" required>
+                        <div class="form-text">Accepted formats: .xlsx, .xls</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-cloud-upload"></i> Upload & Preview
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Current Data Info -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-database"></i> Current Database</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-6">
+                        <div class="p-3">
+                            <h3 class="text-primary mb-0">{{ total_vehicles }}</h3>
+                            <p class="text-muted mb-0">Vehicles</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3">
+                            <h3 class="text-primary mb-0">{{ total_records }}</h3>
+                            <p class="text-muted mb-0">Maintenance Records</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning mt-3 mb-0">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Note:</strong> When importing, vehicles with duplicate VINs or license plates will be skipped. 
+                    You can choose to clear all existing data before importing if you want to start fresh.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Help Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-question-circle"></i> Help & Tips</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-check-circle text-success"></i> Required Vehicle Fields</h6>
+                        <ul>
+                            <li>VIN (17 characters)</li>
+                            <li>Make (e.g., Ford, Toyota)</li>
+                            <li>Model (e.g., Transit 250)</li>
+                            <li>Year (e.g., 2024)</li>
+                            <li>License Plate</li>
+                            <li>Purchase Date (YYYY-MM-DD)</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-check-circle text-success"></i> Required Maintenance Fields</h6>
+                        <ul>
+                            <li>Vehicle VIN (must match a vehicle)</li>
+                            <li>Maintenance Type</li>
+                            <li>Service Date (YYYY-MM-DD)</li>
+                            <li>Mileage at Service</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h6><i class="bi bi-lightbulb text-warning"></i> Maintenance Types</h6>
+                <p class="mb-0" style="line-height: 2.2;">
+                    <span class="badge bg-secondary me-1 mb-1">Oil Change</span>
+                    <span class="badge bg-secondary me-1 mb-1">Tire Rotation</span>
+                    <span class="badge bg-secondary me-1 mb-1">Tire Replacement</span>
+                    <span class="badge bg-secondary me-1 mb-1">Brake Service</span>
+                    <span class="badge bg-secondary me-1 mb-1">Brake Inspection</span>
+                    <span class="badge bg-secondary me-1 mb-1">Inspection</span>
+                    <span class="badge bg-secondary me-1 mb-1">Repair</span>
+                    <span class="badge bg-secondary me-1 mb-1">Scheduled Maintenance</span>
+                    <span class="badge bg-secondary me-1 mb-1">Battery</span>
+                    <span class="badge bg-secondary me-1 mb-1">Transmission</span>
+                    <span class="badge bg-secondary me-1 mb-1">Engine</span>
+                    <span class="badge bg-secondary me-1 mb-1">Smog Check</span>
+                    <span class="badge bg-secondary me-1 mb-1">Registration</span>
+                    <span class="badge bg-secondary me-1 mb-1">Other</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

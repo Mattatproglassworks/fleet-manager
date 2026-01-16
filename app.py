@@ -490,6 +490,147 @@ def upload_document():
                          recent_uploads=recent_uploads)
 
 
+# ===== EXCEL IMPORT/EXPORT ROUTES =====
+
+@app.route('/import-data')
+def import_data_page():
+    """Display the data import page"""
+    total_vehicles = Vehicle.query.count()
+    total_records = MaintenanceRecord.query.count()
+    return render_template('import_data.html', 
+                         total_vehicles=total_vehicles,
+                         total_records=total_records)
+
+
+@app.route('/download-template')
+def download_template():
+    """Download the Excel import template"""
+    from excel_handler import create_fleet_template
+    from flask import send_file
+    
+    template = create_fleet_template()
+    
+    return send_file(
+        template,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name='Fleet_Import_Template.xlsx'
+    )
+
+
+@app.route('/import-data/upload', methods=['POST'])
+def upload_import_file():
+    """Handle Excel file upload and show preview"""
+    from excel_handler import parse_excel_import
+    
+    if 'file' not in request.files:
+        flash('No file selected', 'danger')
+        return redirect(url_for('import_data_page'))
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        flash('No file selected', 'danger')
+        return redirect(url_for('import_data_page'))
+    
+    # Check file extension
+    if not file.filename.endswith(('.xlsx', '.xls')):
+        flash('Please upload an Excel file (.xlsx or .xls)', 'danger')
+        return redirect(url_for('import_data_page'))
+    
+    try:
+        # Parse the Excel file
+        parsed = parse_excel_import(file)
+        
+        # Store parsed data in session for confirmation
+        session['import_data'] = {
+            'vehicles': [
+                {
+                    'vin': v['vin'],
+                    'make': v['make'],
+                    'model': v['model'],
+                    'year': v['year'],
+                    'license_plate': v['license_plate'],
+                    'purchase_date': v['purchase_date'].isoformat() if v.get('purchase_date') else None,
+                    'current_mileage': v['current_mileage'],
+                    'status': v['status'],
+                    'assigned_driver': v['assigned_driver']
+                }
+                for v in parsed['vehicles']
+            ],
+            'maintenance': [
+                {
+                    'vehicle_vin': m['vehicle_vin'],
+                    'maintenance_type': m['maintenance_type'],
+                    'service_date': m['service_date'].isoformat() if m.get('service_date') else None,
+                    'mileage_at_service': m['mileage_at_service'],
+                    'cost': m['cost'],
+                    'service_provider': m['service_provider'],
+                    'notes': m['notes'],
+                    'next_service_due': m['next_service_due'].isoformat() if m.get('next_service_due') else None,
+                    'next_service_mileage': m['next_service_mileage']
+                }
+                for m in parsed['maintenance']
+            ],
+            'errors': parsed['errors'],
+            'warnings': parsed['warnings']
+        }
+        
+        return render_template('import_preview.html',
+                             vehicles=parsed['vehicles'],
+                             maintenance=parsed['maintenance'],
+                             errors=parsed['errors'],
+                             warnings=parsed['warnings'])
+        
+    except Exception as e:
+        flash(f'Error reading Excel file: {str(e)}', 'danger')
+        return redirect(url_for('import_data_page'))
+
+
+@app.route('/import-data/confirm', methods=['POST'])
+def confirm_import():
+    """Confirm and execute the import"""
+    from excel_handler import import_data_to_db
+    from datetime import date
+    
+    if 'import_data' not in session:
+        flash('No import data found. Please upload a file first.', 'danger')
+        return redirect(url_for('import_data_page'))
+    
+    import_data = session['import_data']
+    clear_existing = request.form.get('clear_existing') == 'yes'
+    
+    # Convert date strings back to date objects
+    for v in import_data['vehicles']:
+        if v['purchase_date']:
+            v['purchase_date'] = date.fromisoformat(v['purchase_date'])
+    
+    for m in import_data['maintenance']:
+        if m['service_date']:
+            m['service_date'] = date.fromisoformat(m['service_date'])
+        if m['next_service_due']:
+            m['next_service_due'] = date.fromisoformat(m['next_service_due'])
+    
+    # Execute import
+    result = import_data_to_db(
+        {'vehicles': import_data['vehicles'], 'maintenance': import_data['maintenance']},
+        db, Vehicle, MaintenanceRecord, clear_existing
+    )
+    
+    # Clear session data
+    session.pop('import_data', None)
+    
+    if result['success']:
+        message = f"✅ Import completed! Added {result['vehicles_added']} vehicles and {result['maintenance_added']} maintenance records."
+        if result.get('vehicles_skipped', 0) > 0:
+            message += f" ({result['vehicles_skipped']} vehicles skipped - already exist)"
+        flash(message, 'success')
+    else:
+        flash(f"❌ Import failed: {'; '.join(result['errors'])}", 'danger')
+    
+    return redirect(url_for('vehicles'))
+
+
 # Initialize database
 def init_db():
     with app.app_context():
