@@ -129,6 +129,17 @@ a:hover {
     color: var(--pgw-orange);
 }
 
+/* Mobile navbar collapsed menu */
+.navbar-collapse {
+    padding-top: 1rem;
+}
+
+@media (min-width: 992px) {
+    .navbar-collapse {
+        padding-top: 0;
+    }
+}
+
 /* Cards - Modern Depth */
 .card {
     background: var(--bg-primary);
