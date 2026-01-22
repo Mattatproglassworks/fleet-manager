@@ -61,6 +61,15 @@
                         {% if vehicle.assigned_driver %}
                             <p class="mb-1"><strong>Driver:</strong> {{ vehicle.assigned_driver }}</p>
                         {% endif %}
+                        {% set last_maintenance = latest_maintenance[vehicle.id] %}
+                        {% if last_maintenance and last_maintenance.next_service_mileage and last_maintenance.next_service_due %}
+                            {% set miles_left = last_maintenance.next_service_mileage - vehicle.current_mileage %}
+                            <div class="alert alert-warning p-2 mt-2 mb-0">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                Next service in <strong>{{ miles_left if miles_left > 0 else 0 }}</strong> miles<br>
+                                Approx. date: <strong>{{ last_maintenance.next_service_due.strftime('%b %d, %Y') }}</strong>
+                            </div>
+                        {% endif %}
                     </div>
                     <div class="card-footer bg-transparent">
                         <a href="{{ url_for('vehicle_detail', id=vehicle.id) }}" class="btn btn-sm btn-primary">

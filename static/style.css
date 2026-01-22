@@ -166,13 +166,25 @@ a:hover {
     letter-spacing: -0.01em;
 }
 
+.card-header h5 {
+    color: white !important;
+}
+
 .card-header.bg-warning {
     background: var(--pgw-orange) !important;
     color: white !important;
 }
 
+.card-header.bg-warning h5 {
+    color: white !important;
+}
+
 .card-header.bg-primary {
     background: var(--pgw-navy) !important;
+    color: white !important;
+}
+
+.card-header.bg-primary h5 {
     color: white !important;
 }
 

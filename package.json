@@ -1,0 +1,24 @@
+{
+  "name": "fleet-management",
+  "version": "1.0.0",
+  "description": "A comprehensive web-based application for managing vehicle fleets and maintenance records.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mattatproglassworks/fleet-manager.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Mattatproglassworks/fleet-manager/issues"
+  },
+  "homepage": "https://github.com/Mattatproglassworks/fleet-manager#readme",
+  "dependencies": {
+    "bootstrap-icons": "^1.13.1"
+  }
+}

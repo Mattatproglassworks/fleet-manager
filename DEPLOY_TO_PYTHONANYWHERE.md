@@ -111,3 +111,5 @@ You can access it from anywhere at:
 1. Upload new files via Files tab
 2. Click Reload in Web tab
 
+<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-icons.css') }}">
+
