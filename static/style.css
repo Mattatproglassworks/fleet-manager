@@ -107,6 +107,7 @@ a:hover {
     left: -57px;
     transform: translateY(-50%);
     z-index: 1001;
+    pointer-events: none;
 }
 
 .nav-link {
