@@ -36,3 +36,7 @@ uploads/
 
 # Batch files (local only)
 *.bat
+
+# Node modules
+node_modules/
+package-lock.json
